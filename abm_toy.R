@@ -31,7 +31,7 @@ sims <- expand_grid(
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 10)
+      get_valid_abm_samples(parameters, n_samples = 100) # 
     )
   )
 
