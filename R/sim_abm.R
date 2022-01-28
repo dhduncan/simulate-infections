@@ -35,7 +35,7 @@ sim_abm <- function(
     }
  
     # do passive detection (before contact tracing, so we can contact trace from them)   
-    if (parameters$passive_detections) {
+    if (parameters$symptomatic_detections) {
       infections <- symptomatic_presentation(infections)
     }
     

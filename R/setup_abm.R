@@ -30,7 +30,7 @@ setup_abm <- function(
   workplace_screening = TRUE,
   
   # switch for passive presentation of symptomatic individuals
-  passive_detections = TRUE,
+  symptomatic_detections = TRUE,
   
   # probability of an infectee being found by contact tracing from the source
   p_active_detection = 0.95,
@@ -62,7 +62,7 @@ setup_abm <- function(
     asymptomatic_relative_infectiousness = asymptomatic_relative_infectiousness,
     vaccination_test_seeking_multiplier = vaccination_test_seeking_multiplier,
     workplace_screening = workplace_screening,
-    passive_detections = passive_detections,
+    symptomatic_detections = symptomatic_detections,
     p_active_detection = p_active_detection,
     rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
     rel_active_detection_vaccinated_contact = rel_active_detection_vaccinated_contact,

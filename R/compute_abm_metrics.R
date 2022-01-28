@@ -44,7 +44,7 @@ compute_abm_metrics <- function(abm_result) {
       found = !is.na(case_found_by),
       traced = found & case_found_by == "contact_tracing",
       screened = found & case_found_by == "workplace_screening",
-      symptomatic = found & case_found_by == "passive_surveillance",
+      symptomatic = found & case_found_by == "symptomatic_surveillance",
       infection_to_isolation = isolation_day - infection_day
     )
   
@@ -112,7 +112,7 @@ compute_abm_metrics_full <- function(abm_result) {
       found = !is.na(case_found_by),
       traced = found & case_found_by == "contact_tracing",
       screened = found & case_found_by == "workplace_screening",
-      symptomatic = found & case_found_by == "passive_surveillance",
+      symptomatic = found & case_found_by == "symptomatic_surveillance",
       infection_to_isolation = isolation_day - infection_day
     )
   

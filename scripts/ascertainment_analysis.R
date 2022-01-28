@@ -51,7 +51,7 @@ sims <- expand_grid(
   ve_onward=0.639,
   isolation_days_vax=c(14),
   isolation_start_day=c('isolation'),
-  passive_detections=TRUE, # old do_screening
+  symptomatic_detections=TRUE, # old do_screening
   contact_tracing=TRUE,
   workplace_screening=TRUE # revised do_screening
 ) %>%
@@ -77,7 +77,7 @@ sims <- expand_grid(
         ve_onward=ve_onward,
         isolation_days_vax=isolation_days_vax,
         isolation_start_day=isolation_start_day,
-        passive_detections=passive_detections, # this is always on though, yeah?
+        symptomatic_detections=symptomatic_detections, # this is always on though, yeah?
         contact_tracing = contact_tracing,
         workplace_screening = workplace_screening
       )
@@ -208,7 +208,7 @@ case_ascertainment <- trim_sims %>%
   summarise(infections_by_sim_mode=sum(infections)) %>% # total infections by detection mode and sim
   group_by(simulation) %>% 
   mutate(all_infections=sum(infections_by_sim_mode)) %>% # total infections by sim
-  filter(case_found_by=='passive_surveillance') %>% 
+  filter(case_found_by=='symptomatic_surveillance') %>% 
   mutate(estimated_infections=infections_by_sim_mode*correction_factor) %>% 
   rename(detected_infections=infections_by_sim_mode) %>% 
   mutate(case_ascertainment=detected_infections/estimated_infections) %>% 
@@ -242,7 +242,7 @@ case_ascertainment <- metrics %>%
     values_from = sim_infections
   ) %>%
   mutate(
-    estimated_infections = contact_tracing + workplace_screening + (passive_surveillance * correction_factor)) %>% 
+    estimated_infections = contact_tracing + workplace_screening + (symptomatic_surveillance * correction_factor)) %>% 
   # mutate(estimated_infections=sim_infections[case_found_by=='contact_tracing']+
   #          (sim_infections[case_found_by=='screening']*correction_factor)) %>% 
   mutate(case_ascertainment=detected_infections/estimated_infections) %>% 

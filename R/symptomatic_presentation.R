@@ -50,7 +50,7 @@ symptomatic_presentation <- function(infections) {
   
   infections$case_found_by <- ifelse(
     detected,
-    "passive_surveillance",
+    "symptomatic_surveillance",
     infections$case_found_by
   )
   
