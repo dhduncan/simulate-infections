@@ -10,7 +10,7 @@
 #' @export
 infectiousness <- function(infections) {
   # compute infectiousness from GI distribution, isolation status, vaccination_status etc.
-
+  
   day_diff <- .abm_globals$day - infections$infection_day
   
   isolation_multiplier <- ifelse(
@@ -31,7 +31,7 @@ infectiousness <- function(infections) {
     .abm_parameters$asymptomatic_relative_infectiousness
   )
   
-  .abm_parameters$R_star *  # NG plans make this time varying at some point 
+  get_R_star(day = .abm_globals$day, amplitude = 0.1, wavelength = 0.09) *
     gi_pmf_discrete(day_diff) *
     isolation_multiplier *
     vaccination_multiplier *
