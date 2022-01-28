@@ -8,7 +8,7 @@
 #' @author Nick Golding
 #' @export
 get_valid_abm_sample <- function(parameters,
-                                 initial_infections = 500, #100 for 70 and 80%, 1000 for 90%
+                                 initial_infections = 1000, #100 for 70 and 80%, 1000 for 90%
                                  min_infections = 100,
                                  min_days = 0, #20,
                                  max_infections = Inf, #min_infections * 100,

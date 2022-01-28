@@ -28,7 +28,6 @@ sims <- expand_grid(
       vaccination_coverage == 0.8 ~ 4.6, # 4.6 fails < 1.9
       vaccination_coverage == 0.74 ~ 5.8 # 4.6 fails < 1.55
     )
-    
   ) %>%
   rowwise() %>%
   mutate(
@@ -40,10 +39,10 @@ sims <- expand_grid(
         passive_detection_given_symptoms = passive_detection_given_symptoms,
         rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
         rel_active_detection_vaccinated_contact = rel_active_detection_vaccinated_contact,
-        ve_onward=ve_onward,
-        isolation_days_vax=isolation_days_vax,
-        isolation_start_day=isolation_start_day,
-        symptomatic_detections=symptomatic_detections, # this is always on though, yeah?
+        ve_onward = ve_onward,
+        isolation_days_vax = isolation_days_vax,
+        isolation_start_day = isolation_start_day,
+        symptomatic_detections = symptomatic_detections,
         contact_tracing = contact_tracing,
         workplace_screening = workplace_screening
       )
@@ -51,7 +50,7 @@ sims <- expand_grid(
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 200)
+      get_valid_abm_samples(parameters, n_samples = 50)
     )
   )  
 
@@ -256,7 +255,3 @@ ggplot(case_ascertainment) +
 #   width=5,
 #   bg='white'
 # )
-
-
-
-

@@ -9,12 +9,13 @@
 #' @return
 #' @author dhduncan
 #' @export
-get_R_star <- function(day = .abm_globals$day, 
-                       amplitude = 0.1, 
-                       wavelength = 0.09) {
+get_R_star <- function(day = .abm_globals$day) {
 
-  # amplitude and wavelength arbitrarily selected based on viewing curve(exp(amplitude * sin(x * wavelength)), from = 1, to = 365) and looking for R=1 threshold crossing behaviour
+height = log(.abm_parameters$R + 1) # just trying get in the ball park for now
+amplitude = 0.2
+wavelength = 0.03
+# amplitude and wavelength arbitrarily selected based on viewing curve(exp(amplitude * sin(x * wavelength)), from = 1, to = 365) and looking for R=1 threshold crossing behaviour
   
-  exp(amplitude * sin(day * amplitude))
+  exp(height + amplitude * sin(day * wavelength))
 
 }
