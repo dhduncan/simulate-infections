@@ -1,16 +1,14 @@
-# Freya Shearer's file embedding 
+# Freya Shearer's file, embedding the bAByM 
 
 ## Loads all packages and defines how to handle NAMESPACE conflicts
 source("./packages.R")
-
-
 
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 sims <- expand_grid(
   vaccination_coverage = 0.74, #0.740,
   vaccination_test_seeking_multiplier = c(1),
-  passive_detection_given_symptoms = c(0.5),
+  passive_detection_given_symptoms = c(0.2),
   rel_active_detection_vaccinated_source = c(1),
   rel_active_detection_vaccinated_contact = c(1,0),
   #ve_onward=0.639*c(0.9, 1, 1.1),
@@ -81,20 +79,49 @@ ggplot(plot_df,
 #   bg='white'
 # )
 
-
 # clean up simulations
 trim_sims <- sims %>% 
   unnest(simulations) %>% 
   filter(
   # find sources to consider (exclude those during burn in and last two weeks
   # due to truncation of onward infection)
-  !is.na(source_id) &
+  !is.na(source_id) &  # may be superfluous at present
     infection_day > 20 & # 70% 20-50, 80% 50-80, 90% 10-300
     infection_day < (max(infection_day) - 14)) %>% 
   group_by(simulation,
            infection_day,
            case_found_by) %>% 
-  summarise(infections=n())
+  summarise(infections = n()) %>% 
+  group_by(simulation, infection_day) %>%
+            mutate(proportion = infections / sum(infections),
+                   infections = infections,
+                   case_found_by=case_when(
+                     is.na(case_found_by)~'undetected',
+                     TRUE ~ case_found_by)
+                   )
+
+# save output for NG ascertainment model
+trim_sims %>% 
+#  filter(case_found_by != 'undetected') %>% 
+  select(-proportion) %>% 
+  mutate(
+    case_found_by = case_when(
+      case_found_by == "contact_tracing" ~ "count_tested_contact",
+      case_found_by == "workplace_screening" ~ "count_tested_screening",
+      case_found_by == "symptomatic_surveillance" ~ "count_tested_symptoms",
+      TRUE ~ "undetected"
+    )
+  ) %>% 
+  pivot_wider(names_from = case_found_by,
+              values_from = infections)
+
+write_csv(select(trim_sims, -proportion), 
+          paste0("outputs/sim_output_",
+                 format(Sys.Date(), "%d"),
+                 format(Sys.Date(), "%m"),
+                 format(Sys.Date(), "%Y"),
+                 ".csv"))
+# could try and include the essential params in the file name rather than date which the system takes care of  
 
 # 2)
 # check trends in mode of detection of cases over time
@@ -102,11 +129,6 @@ trim_sims <- sims %>%
 # detected via symptomatic surveillance
 # detected via active detection
 # neither
-trim_sims <- trim_sims %>% 
-  mutate(case_found_by=case_when(
-    is.na(case_found_by)~'undetected',
-    TRUE ~ case_found_by)
-  )
   
 ggplot(trim_sims) +
   aes(
