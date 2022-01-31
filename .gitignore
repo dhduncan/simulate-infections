@@ -4,7 +4,6 @@
 # ignore everything in the data folder
 data/
 not_synced/
-outputs/
 
 # ignore figures in docs
 doc/*/figure-html/
