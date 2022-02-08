@@ -7,24 +7,24 @@ future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 sims <- expand_grid(
   vaccination_coverage = 0.74, #0.740,
-  vaccination_test_seeking_multiplier = c(1),
-  passive_detection_given_symptoms = c(0.2),
-  rel_active_detection_vaccinated_source = c(1),
+  vaccination_test_seeking_multiplier = 1,
+  passive_detection_given_symptoms = c(0.5),
+  rel_active_detection_vaccinated_source = c(1,0),
   rel_active_detection_vaccinated_contact = c(1,0),
   #ve_onward=0.639*c(0.9, 1, 1.1),
   ve_onward=0.639,
-  isolation_days_vax=c(14),
+  isolation_days_vax=c(14), 
   isolation_start_day=c('isolation'),
-  symptomatic_detections=TRUE, # old do_screening
+  symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
-  workplace_screening=TRUE # revised do_screening
+  workplace_screening=TRUE 
 ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
     R = case_when(
-      vaccination_coverage == 0.9 ~ 5, # 4.6 fails <2.58
-      vaccination_coverage == 0.8 ~ 4.6, # 4.6 fails < 1.9
-      vaccination_coverage == 0.74 ~ 5.8 # 4.6 fails < 1.55
+      vaccination_coverage <= .79 ~ 5.8, # 4.6 fails < 1.55
+      vaccination_coverage >= 0.9 ~ 5, # 4.6 fails <2.58
+      TRUE ~ 4.6 # 4.6 fails < 1.9 | assuming this is for vax levels between 8 and 9
     )
   ) %>%
   rowwise() %>%
@@ -48,7 +48,7 @@ sims <- expand_grid(
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 50)
+      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sampel for now
     )
   )  
 
@@ -101,26 +101,24 @@ trim_sims <- sims %>%
                    )
 
 # save output for NG ascertainment model
-trim_sims %>% 
+ascertainment_output <- trim_sims %>% 
 #  filter(case_found_by != 'undetected') %>% 
   select(-proportion) %>% 
   mutate(
     case_found_by = case_when(
-      case_found_by == "contact_tracing" ~ "count_tested_contact",
-      case_found_by == "workplace_screening" ~ "count_tested_screening",
-      case_found_by == "symptomatic_surveillance" ~ "count_tested_symptoms",
+      case_found_by == "contact_tracing" ~ "contact",
+      case_found_by == "workplace_screening" ~ "screening",
+      case_found_by == "symptomatic_surveillance" ~ "symptomatic",
       TRUE ~ "undetected"
     )
   ) %>% 
   pivot_wider(names_from = case_found_by,
-              values_from = infections)
+              values_from = infections,
+              names_prefix = "count_tested_") #%>% 
+  #mutate(across(ends_with("_fraction"), ~if_else(is.na(.), 0, .)))
+  
+write_csv(ascertainment_output, "outputs/sim_output.csv")
 
-write_csv(select(trim_sims, -proportion), 
-          paste0("outputs/sim_output_",
-                 format(Sys.Date(), "%d"),
-                 format(Sys.Date(), "%m"),
-                 format(Sys.Date(), "%Y"),
-                 ".csv"))
 # could try and include the essential params in the file name rather than date which the system takes care of  
 
 # 2)
