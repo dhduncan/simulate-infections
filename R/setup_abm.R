@@ -32,6 +32,8 @@ setup_abm <- function(
   # switch for passive presentation of symptomatic individuals
   symptomatic_detections = TRUE,
   
+  static_R_star = TRUE,
+  
   # probability of an infectee being found by contact tracing from the source
   p_active_detection = 0.95,
   
@@ -69,7 +71,8 @@ setup_abm <- function(
     contact_tracing = contact_tracing,
     isolation_to_interview_samples = isolation_to_interview_samples,
     isolation_days_vax=isolation_days_vax,
-    isolation_start_day=isolation_start_day
+    isolation_start_day=isolation_start_day,
+    static_R_star = static_R_star
     
   )
   

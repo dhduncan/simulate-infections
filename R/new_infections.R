@@ -22,7 +22,9 @@ new_infections <- function(infections, vaccinated = FALSE) {
   }
   
   # simulate onward infections
-  infectiousness <- infectiousness(infections) * susceptibility_multiplier
+  infectiousness <- infectiousness(infections, 
+                                   .abm_parameters$static_R_star) * susceptibility_multiplier
+  
   onward_infections <- rpois(
     nrow(infections),
     infectiousness * fraction
