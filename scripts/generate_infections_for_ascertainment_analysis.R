@@ -18,7 +18,7 @@ sims <- expand_grid(
   symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
   workplace_screening=TRUE,
-  static_R_star = FALSE
+  static_R_star = TRUE
   ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
@@ -50,9 +50,11 @@ sims <- expand_grid(
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sampel for now
+      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sample for now
     )
   )  
+
+xlim <- sims %>% unnest(simulations) %>% summarise(max(infection_day)) %>% pull()
 
 # plot simulations to check that they make sense
 plot_df <- sims %>%
@@ -70,7 +72,7 @@ plot_infections <- ggplot(plot_df,
          y=infections,
          group=simulation)
 ) +
-  scale_x_continuous(limits=c(0,80)) +
+  scale_x_continuous(limits=c(0,xlim)) +
   theme_cowplot() +
   geom_line(aes(color=simulation)) +
   theme(legend.position = "none") 
@@ -94,7 +96,7 @@ plot_ascertainment <- sims %>%
       x=infection_day, 
       y=ascertainment,
       group=simulation)) +
-  scale_x_continuous(limits=c(0,80)) +
+  scale_x_continuous(limits=c(0,xlim)) +
   theme_cowplot() +
   geom_line() +
   theme(legend.position = "none") 
@@ -102,7 +104,42 @@ plot_ascertainment <- sims %>%
 (sim_plot <- plot_infections + plot_ascertainment)
 
 
+# check for superspreading ----
+onward_infections <- sims %>% 
+  unnest(simulations) %>% 
+  filter(!is.na(source_id)) %>% 
+  group_by(simulation, source_id) %>% 
+  summarise(onward_infections = n(),
+            infection_day = first(infection_day))
 
+onward_infection_hist <- ggplot(
+  onward_infections, 
+  aes(onward_infections)) + 
+  geom_histogram(binwidth = 1)
+
+onward_thru_time <- sims %>% 
+  unnest(simulations) %>% 
+  left_join(
+    select(
+      ungroup(onward_infections), 
+      onward_infections, source_id), 
+    by = "source_id") %>% 
+  ggplot(
+    aes(x = infection_day,
+        y = onward_infections)
+  ) + 
+  geom_point(aes(alpha = onward_infections), 
+             show.legend = FALSE) +
+  facet_grid(case_found_by~.) +
+  theme_cowplot()
+  
+
+ggplot(source_check_df,
+       aes(x = infection_day, y = onward_infections)) +
+  geom_point()
+  
+  
+  
 # ggsave(
 #   'outputs/plots/infections_R5.8_pdetect0.5.png',
 #   height=6,
