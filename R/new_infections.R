@@ -43,7 +43,8 @@ new_infections <- function(infections, vaccinated = FALSE) {
       isolated = FALSE,
       case_found_by = NA,
       vaccinated = vaccinated,
-      symptomatic = rbinom(n_new, 1, p_symptoms)
+      symptomatic = rbinom(n_new, 1, p_symptoms),
+      screenable = rbinom(n, 1, .abm_parameters$screenable_fraction)
     )
   } else {
     new_infections <- NULL

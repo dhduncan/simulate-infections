@@ -19,14 +19,7 @@ do_screening <- function(infections) {
   # put them in isolation as soon as they are detected
   
   # only detectable if they are not already in isolation
-  detectable <- !is.finite(infections$isolation_day)
-  
-  p_workforce <- 107e+05 / 23402e+03 # rounded population stats from 
-  # https://profile.id.com.au/australia/population.  62% of that workforce is in FTE
-  
-  # in kind of workforce subject to routine screening
-  p_essential <- 0.40  # how to parameterise this - different estimates and definitions. Here are some data, from which I've plucked an arbitrary middle value: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19, i've gone arbitrarily lower
-  p_screenable <- p_workforce * p_essential
+  detectable <- !is.finite(infections$isolation_day) & infections$screenable
   
   p_screened <- 5/7  # assuming works 5 of 7 days
  
@@ -40,7 +33,7 @@ do_screening <- function(infections) {
   
   p_detection = ifelse(
     detectable,
-    p_screenable * p_screened * p_positive,
+    p_screened * p_positive,
     0)
  
   detected <- rbinom(nrow(infections), 1, p_detection)

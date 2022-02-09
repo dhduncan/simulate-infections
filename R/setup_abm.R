@@ -29,6 +29,13 @@ setup_abm <- function(
   # whether to do routine screening at workplaces
   workplace_screening = TRUE,
   
+  screenable_fraction =  0.4 *  107e+05 / 23402e+03, # rounded population stats from 
+  # https://profile.id.com.au/australia/population.  62% of that workforce is in FTE, but that detail not in sim at present
+  
+  # in kind of workforce subject to routine screening
+  #p_essential <- 0.40  # how to parameterise this - different estimates and definitions. Here are some data, from which I've plucked an arbitrary middle value: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19, i've gone arbitrarily lower
+  #p_screenable <- p_workforce * p_essential
+  
   # switch for passive presentation of symptomatic individuals
   symptomatic_detections = TRUE,
   
@@ -64,6 +71,7 @@ setup_abm <- function(
     asymptomatic_relative_infectiousness = asymptomatic_relative_infectiousness,
     vaccination_test_seeking_multiplier = vaccination_test_seeking_multiplier,
     workplace_screening = workplace_screening,
+    screenable_fraction = screenable_fraction,
     symptomatic_detections = symptomatic_detections,
     p_active_detection = p_active_detection,
     rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
@@ -73,6 +81,7 @@ setup_abm <- function(
     isolation_days_vax=isolation_days_vax,
     isolation_start_day=isolation_start_day,
     static_R_star = static_R_star
+    
     
   )
   

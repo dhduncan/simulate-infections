@@ -17,7 +17,10 @@ sim_initial_infections <- function(n = 100) {
     isolated = FALSE,
     case_found_by = NA,
     vaccinated = rbinom(n, 1, .abm_parameters$vaccination_coverage),
-    symptomatic = rbinom(n, 1, .abm_parameters$clinical_fraction)
+    symptomatic = rbinom(n, 1, .abm_parameters$clinical_fraction),
+    screenable = rbinom(n, 1, .abm_parameters$screenable_fraction)
+    
+    
   )
 
 }

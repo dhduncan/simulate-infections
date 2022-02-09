@@ -26,7 +26,7 @@ sim_abm <- function(
     .abm_globals$day <<- day
     .abm_globals$highest_id <<- nrow(infections)
     
-    # infect people
+    # infect people in the population
     infections <- infect(infections)
     
    # do workplace screening for asymptomatic people, so they can be isolated (and their contacts traced??) 
