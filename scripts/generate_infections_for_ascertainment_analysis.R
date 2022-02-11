@@ -6,7 +6,7 @@ source("./packages.R")
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 sims <- expand_grid(
-  vaccination_coverage = 0.74, #0.740,
+  vaccination_coverage = 0.74,
   vaccination_test_seeking_multiplier = 1,
   passive_detection_given_symptoms = c(0.5),
   rel_active_detection_vaccinated_source = c(1,0),
@@ -17,8 +17,9 @@ sims <- expand_grid(
   isolation_start_day=c('isolation'),
   symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
-  workplace_screening=TRUE 
-) %>%
+  workplace_screening=TRUE#,
+#  static_R_star = TRUE
+  ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
     R = case_when(
@@ -42,15 +43,18 @@ sims <- expand_grid(
         isolation_start_day = isolation_start_day,
         symptomatic_detections = symptomatic_detections,
         contact_tracing = contact_tracing,
-        workplace_screening = workplace_screening
+        workplace_screening = workplace_screening#,
+        # static_R_star = static_R_star
       )
     )
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sampel for now
+      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sample for now
     )
   )  
+
+xlim <- sims %>% unnest(simulations) %>% summarise(max(infection_day)) %>% pull()
 
 # plot simulations to check that they make sense
 plot_df <- sims %>%
@@ -62,15 +66,79 @@ plot_df <- sims %>%
   ) #%>% 
 #filter(simulation %in% paste0('sim_', 1:50))
 
-ggplot(plot_df,
+plot_infections <- ggplot(plot_df,
        aes(
          x=infection_day, 
          y=infections,
          group=simulation)
 ) +
+  scale_x_continuous(limits=c(0,xlim)) +
   theme_cowplot() +
   geom_line(aes(color=simulation)) +
   theme(legend.position = "none") 
+
+plot_ascertainment <- sims %>% 
+  unnest(simulations) %>% 
+  filter(
+    !is.na(source_id) &  # may be superfluous at present
+      infection_day > 1 & 
+  infection_day < (max(infection_day) - 14)) %>% 
+  group_by(simulation,
+           infection_day,
+           case_found_by) %>% 
+  summarise(infections = n(),
+            ) %>% 
+  mutate(proportion = infections / sum(infections)) %>% 
+  filter(is.na(case_found_by)) %>% 
+  summarise(ascertainment = 1 - proportion) %>% 
+  ggplot(
+    aes(
+      x=infection_day, 
+      y=ascertainment,
+      group=simulation)) +
+  scale_x_continuous(limits=c(0,xlim)) +
+  theme_cowplot() +
+  geom_line() +
+  theme(legend.position = "none") 
+
+(sim_plot <- plot_infections + plot_ascertainment)
+
+
+# check for superspreading ----
+onward_infections <- sims %>% 
+  unnest(simulations) %>% 
+  filter(!is.na(source_id)) %>% 
+  group_by(simulation, source_id) %>% 
+  summarise(onward_infections = n(),
+            infection_day = first(infection_day))
+
+onward_infection_hist <- ggplot(
+  onward_infections, 
+  aes(onward_infections)) + 
+  geom_histogram(binwidth = 1)
+
+onward_thru_time <- sims %>% 
+  unnest(simulations) %>% 
+  left_join(
+    select(
+      ungroup(onward_infections), 
+      onward_infections, source_id), 
+    by = "source_id") %>% 
+  ggplot(
+    aes(x = infection_day,
+        y = onward_infections)
+  ) + 
+  geom_point(aes(alpha = onward_infections), 
+             show.legend = FALSE) +
+  facet_grid(case_found_by~.) +
+  theme_cowplot()
+  
+
+ggplot(source_check_df,
+       aes(x = infection_day, y = onward_infections)) +
+  geom_point()
+  
+  
   
 # ggsave(
 #   'outputs/plots/infections_R5.8_pdetect0.5.png',
@@ -86,7 +154,7 @@ trim_sims <- sims %>%
   # find sources to consider (exclude those during burn in and last two weeks
   # due to truncation of onward infection)
   !is.na(source_id) &  # may be superfluous at present
-    infection_day > 20 & # 70% 20-50, 80% 50-80, 90% 10-300
+    infection_day > 10 & # 70% 20-50, 80% 50-80, 90% 10-300
     infection_day < (max(infection_day) - 14)) %>% 
   group_by(simulation,
            infection_day,

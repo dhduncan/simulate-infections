@@ -21,8 +21,9 @@ new_infections <- function(infections, vaccinated = FALSE) {
     clinical_fraction_multiplier <- 1
   }
   
-  # simulate onward infections
+  # simulate onward infections 
   infectiousness <- infectiousness(infections) * susceptibility_multiplier
+  
   onward_infections <- rpois(
     nrow(infections),
     infectiousness * fraction
@@ -41,7 +42,8 @@ new_infections <- function(infections, vaccinated = FALSE) {
       isolated = FALSE,
       case_found_by = NA,
       vaccinated = vaccinated,
-      symptomatic = rbinom(n_new, 1, p_symptoms)
+      symptomatic = rbinom(n_new, 1, p_symptoms),
+      screenable = rbinom(n, 1, .abm_parameters$screenable_fraction)
     )
   } else {
     new_infections <- NULL

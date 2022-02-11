@@ -11,8 +11,8 @@ get_valid_abm_sample <- function(parameters,
                                  initial_infections = 1000, #100 for 70 and 80%, 1000 for 90%
                                  min_infections = 100,
                                  min_days = 0, #20,
-                                 max_infections = min_infections * 100,
-                                 max_days = 80, #min_days * 5, max_days 70% 20-50 days, 80% 50-80, 90% 10-300 
+                                 max_infections = min_infections * 200,
+                                 max_days = 100, #min_days * 5, max_days 70% 20-50 days, 80% 50-80, 90% 10-300 
                                  exclude_days_start = 7, # avoid lag
                                  exclude_days_end = 14, # avoid lead
                                  max_tries = 20) {
@@ -24,7 +24,7 @@ get_valid_abm_sample <- function(parameters,
   successful <- FALSE
   while (!successful & try < max_tries) {
     try <- try + 1
-    
+ browser()   
     sim <- sim_abm(
       infections = sim_initial_infections(initial_infections),
       parameters = parameters,

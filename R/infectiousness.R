@@ -31,11 +31,22 @@ infectiousness <- function(infections) {
     .abm_parameters$asymptomatic_relative_infectiousness
   )
   
-  get_R_star() *
-#    .abm_parameters$R_star *
-    gi_pmf_discrete(day_diff) *
-    isolation_multiplier *
-    vaccination_multiplier *
-    symptomatic_multiplier
-  
+  #if(static_R_star) {
+    
+    .abm_parameters$R_star *
+      gi_pmf_discrete(day_diff) *
+      isolation_multiplier *
+      vaccination_multiplier *
+      symptomatic_multiplier
+    
+  # } else {
+  # 
+  #   get_R_star() *
+  #     gi_pmf_discrete(day_diff) *
+  #     isolation_multiplier *
+  #     vaccination_multiplier *
+  #     symptomatic_multiplier
+  #   
+  # }
+    
 }
