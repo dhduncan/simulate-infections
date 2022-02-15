@@ -7,9 +7,9 @@ future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 
 sims <- expand_grid(
-  vaccination_coverage = 0.74,
+  vaccination_coverage = 0.94,
   vaccination_test_seeking_multiplier = 1,
-  passive_detection_given_symptoms = c(0.5),
+  passive_detection_given_symptoms = 0.5,
   rel_active_detection_vaccinated_source = 1,
   rel_active_detection_vaccinated_contact = 1,
   isolation_days_vax=c(7), 
@@ -96,7 +96,7 @@ plot_ascertainment <- sims %>%
       group=simulation)) +
   scale_x_continuous(limits=c(0,xlim)) +
   theme_cowplot() +
-  geom_line() +
+  geom_line(aes(color=simulation)) +
   theme(legend.position = "none") 
 
 (sim_plot <- plot_grid(plot_infections, plot_ascertainment, nrow = 2))
@@ -131,20 +131,6 @@ onward_thru_time <- sims %>%
   theme_cowplot()
   
 plot_grid(onward_infection_hist, onward_thru_time, nrow = 2)
-
-
-ggplot(source_check_df,
-       aes(x = infection_day, y = onward_infections)) +
-  geom_point()
-  
-  
-  
-# ggsave(
-#   'outputs/plots/infections_R5.8_pdetect0.5.png',
-#   height=6,
-#   width=8,
-#   bg='white'
-# )
 
 # clean up simulations
 trim_sims <- sims %>% 

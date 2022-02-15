@@ -16,9 +16,9 @@ setup_abm <- function(
   vaccination_coverage = 0.94,
   # incorporate correction for onward transmission to account for reduction in
   # infectiousness due to being symptomatic
-  ve_onward = 0.6339, # sensitivity analysis values, lower=0.575, upper=0.7029
-  ve_susceptibility = 0.735,
-  ve_symptoms = 0.775,
+  ve_onward = 0.339, # sensitivity analysis values, lower=0.575, upper=0.7029
+  ve_susceptibility = 0.435,
+  ve_symptoms = 0.375,
   
   # symptomaticity and passive detection
   clinical_fraction = 0.307, #0.307, # was previously - 0.8
