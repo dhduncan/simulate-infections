@@ -18,11 +18,8 @@ do_screening <- function(infections) {
   # they test positive on days 4-7 post infection (assuming RATs)
   # put them in isolation as soon as they are detected
   
-  # only detectable if they are not in isolation
-  detectable <- !is.finite(infections$isolation_day)
-  
-  # in kind of workforce subject to routine screening
-  p_essential <- 0.30  # how to parameterise this - different estimates and definitions. this link is to a high one https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19, i've gone arbitrarily lower
+  # only detectable if they are not already in isolation
+  detectable <- !is.finite(infections$isolation_day) & infections$screenable
   
   p_screened <- 5/7  # assuming works 5 of 7 days
  
@@ -36,7 +33,7 @@ do_screening <- function(infections) {
   
   p_detection = ifelse(
     detectable,
-    p_essential * p_screened * p_positive,
+    p_screened * p_positive,
     0)
  
   detected <- rbinom(nrow(infections), 1, p_detection)

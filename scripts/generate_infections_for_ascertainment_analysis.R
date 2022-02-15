@@ -1,32 +1,32 @@
-# Freya Shearer's file embedding 
+# Freya Shearer's file, embedding the bAByM 
 
 ## Loads all packages and defines how to handle NAMESPACE conflicts
 source("./packages.R")
 
-
-
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
+
+#safe_get_valid_abm_samples <- safely(get_valid_abm_samples)
+
 sims <- expand_grid(
-  vaccination_coverage = 0.74, #0.740,
-  vaccination_test_seeking_multiplier = c(1),
+  vaccination_coverage = 0.74,
+  vaccination_test_seeking_multiplier = 1,
   passive_detection_given_symptoms = c(0.5),
-  rel_active_detection_vaccinated_source = c(1),
-  rel_active_detection_vaccinated_contact = c(1,0),
-  #ve_onward=0.639*c(0.9, 1, 1.1),
-  ve_onward=0.639,
-  isolation_days_vax=c(14),
+  rel_active_detection_vaccinated_source = 1,
+  rel_active_detection_vaccinated_contact = 1,
+  isolation_days_vax=c(7), 
   isolation_start_day=c('isolation'),
-  symptomatic_detections=TRUE, # old do_screening
+  symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
-  workplace_screening=TRUE # revised do_screening
-) %>%
+  workplace_screening=TRUE,
+  static_R_star = FALSE
+  ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
     R = case_when(
-      vaccination_coverage == 0.9 ~ 5, # 4.6 fails <2.58
-      vaccination_coverage == 0.8 ~ 4.6, # 4.6 fails < 1.9
-      vaccination_coverage == 0.74 ~ 5.8 # 4.6 fails < 1.55
+      vaccination_coverage <= .79 ~ 5.8, # 4.6 fails < 1.55
+      vaccination_coverage >= 0.9 ~ 5, # 4.6 fails <2.58
+      TRUE ~ 4.6 # 4.6 fails < 1.9 | assuming this is for vax levels between 8 and 9
     )
   ) %>%
   rowwise() %>%
@@ -39,20 +39,22 @@ sims <- expand_grid(
         passive_detection_given_symptoms = passive_detection_given_symptoms,
         rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
         rel_active_detection_vaccinated_contact = rel_active_detection_vaccinated_contact,
-        ve_onward = ve_onward,
         isolation_days_vax = isolation_days_vax,
         isolation_start_day = isolation_start_day,
         symptomatic_detections = symptomatic_detections,
         contact_tracing = contact_tracing,
-        workplace_screening = workplace_screening
+        workplace_screening = workplace_screening,
+         static_R_star = static_R_star
       )
     )
   ) %>%
   mutate(
     simulations = list(
-      get_valid_abm_samples(parameters, n_samples = 50)
+      get_valid_abm_samples(parameters, n_samples = 1) # we can only use one sample for now
     )
   )  
+
+xlim <- sims %>% unnest(simulations) %>% summarise(max(infection_day)) %>% pull()
 
 # plot simulations to check that they make sense
 plot_df <- sims %>%
@@ -64,15 +66,80 @@ plot_df <- sims %>%
   ) #%>% 
 #filter(simulation %in% paste0('sim_', 1:50))
 
-ggplot(plot_df,
+plot_infections <- ggplot(plot_df,
        aes(
          x=infection_day, 
          y=infections,
          group=simulation)
 ) +
+  scale_x_continuous(limits=c(0,xlim)) +
   theme_cowplot() +
   geom_line(aes(color=simulation)) +
   theme(legend.position = "none") 
+
+plot_ascertainment <- sims %>% 
+  unnest(simulations) %>% 
+  filter(
+    !is.na(source_id) &  # may be superfluous at present
+      infection_day > 1 & 
+  infection_day < (max(infection_day) - 14)) %>% 
+  group_by(simulation,
+           infection_day,
+           case_found_by) %>% 
+  summarise(infections = n(),
+            ) %>% 
+  mutate(proportion = infections / sum(infections)) %>% 
+  filter(is.na(case_found_by)) %>% 
+  summarise(ascertainment = 1 - proportion) %>% 
+  ggplot(
+    aes(
+      x=infection_day, 
+      y=ascertainment,
+      group=simulation)) +
+  scale_x_continuous(limits=c(0,xlim)) +
+  theme_cowplot() +
+  geom_line() +
+  theme(legend.position = "none") 
+
+(sim_plot <- plot_grid(plot_infections, plot_ascertainment, nrow = 2))
+
+# check for superspreading ----
+onward_infections <- sims %>% 
+  unnest(simulations) %>% 
+  filter(!is.na(source_id)) %>% 
+  group_by(simulation, source_id) %>% 
+  summarise(onward_infections = n(),
+            infection_day = first(infection_day))
+
+onward_infection_hist <- ggplot(
+  onward_infections, 
+  aes(onward_infections)) + 
+  geom_histogram(binwidth = 1)
+
+onward_thru_time <- sims %>% 
+  unnest(simulations) %>% 
+  left_join(
+    select(
+      ungroup(onward_infections), 
+      onward_infections, source_id), 
+    by = "source_id") %>% 
+  ggplot(
+    aes(x = infection_day,
+        y = onward_infections)
+  ) + 
+  geom_point(aes(alpha = onward_infections), 
+             show.legend = FALSE) +
+  facet_grid(case_found_by~.) +
+  theme_cowplot()
+  
+plot_grid(onward_infection_hist, onward_thru_time, nrow = 2)
+
+
+ggplot(source_check_df,
+       aes(x = infection_day, y = onward_infections)) +
+  geom_point()
+  
+  
   
 # ggsave(
 #   'outputs/plots/infections_R5.8_pdetect0.5.png',
@@ -81,20 +148,47 @@ ggplot(plot_df,
 #   bg='white'
 # )
 
-
 # clean up simulations
 trim_sims <- sims %>% 
   unnest(simulations) %>% 
   filter(
   # find sources to consider (exclude those during burn in and last two weeks
   # due to truncation of onward infection)
-  !is.na(source_id) &
-    infection_day > 20 & # 70% 20-50, 80% 50-80, 90% 10-300
+  !is.na(source_id) &  # may be superfluous at present
+    infection_day > 10 & # 70% 20-50, 80% 50-80, 90% 10-300
     infection_day < (max(infection_day) - 14)) %>% 
   group_by(simulation,
            infection_day,
            case_found_by) %>% 
-  summarise(infections=n())
+  summarise(infections = n()) %>% 
+  group_by(simulation, infection_day) %>%
+            mutate(proportion = infections / sum(infections),
+                   infections = infections,
+                   case_found_by=case_when(
+                     is.na(case_found_by)~'undetected',
+                     TRUE ~ case_found_by)
+                   )
+
+# save output for NG ascertainment model
+ascertainment_output <- trim_sims %>% 
+#  filter(case_found_by != 'undetected') %>% 
+  select(-proportion) %>% 
+  mutate(
+    case_found_by = case_when(
+      case_found_by == "contact_tracing" ~ "contact",
+      case_found_by == "symptomatic_surveillance" ~ "symptomatic",
+      case_found_by == "workplace_screening" ~ "screening",
+      TRUE ~ "undetected"
+    )
+  ) %>% 
+  pivot_wider(names_from = case_found_by,
+              values_from = infections,
+              names_prefix = "count_tested_") #%>% 
+  #mutate(across(ends_with("_fraction"), ~if_else(is.na(.), 0, .)))
+  
+write_csv(ascertainment_output, "outputs/sim_output.csv")
+
+# could try and include the essential params in the file name rather than date which the system takes care of  
 
 # 2)
 # check trends in mode of detection of cases over time
@@ -102,11 +196,6 @@ trim_sims <- sims %>%
 # detected via symptomatic surveillance
 # detected via active detection
 # neither
-trim_sims <- trim_sims %>% 
-  mutate(case_found_by=case_when(
-    is.na(case_found_by)~'undetected',
-    TRUE ~ case_found_by)
-  )
   
 ggplot(trim_sims) +
   aes(
@@ -122,6 +211,7 @@ ggplot(trim_sims) +
   theme(legend.position = "none") +
   labs(title="")
     
+# ggsave(
 # ggsave(
 #   'outputs/plots/infections_trajectories_by_mode_pdetect0.5.png',
 #   height=6,
