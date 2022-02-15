@@ -5,6 +5,10 @@ source("./packages.R")
 
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
+
+safe_get_valid_abm_samples <- safely(get_valid_abm_samples)
+
+
 sims <- expand_grid(
   vaccination_coverage = 0.74,
   vaccination_test_seeking_multiplier = 1,
@@ -17,8 +21,8 @@ sims <- expand_grid(
   isolation_start_day=c('isolation'),
   symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
-  workplace_screening=TRUE#,
-#  static_R_star = TRUE
+  workplace_screening=TRUE,
+  static_R_star = TRUE
   ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
@@ -43,8 +47,8 @@ sims <- expand_grid(
         isolation_start_day = isolation_start_day,
         symptomatic_detections = symptomatic_detections,
         contact_tracing = contact_tracing,
-        workplace_screening = workplace_screening#,
-        # static_R_star = static_R_star
+        workplace_screening = workplace_screening,
+         static_R_star = static_R_star
       )
     )
   ) %>%

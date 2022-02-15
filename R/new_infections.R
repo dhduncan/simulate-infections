@@ -32,7 +32,7 @@ new_infections <- function(infections, vaccinated = FALSE) {
   p_symptoms <- clinical_fraction_multiplier * .abm_parameters$clinical_fraction
   
   n_new <- sum(onward_infections)
-  
+
   if (n_new > 0) {
     new_infections <- data.frame(
       id = .abm_globals$highest_id + seq_len(n_new),
@@ -43,7 +43,8 @@ new_infections <- function(infections, vaccinated = FALSE) {
       case_found_by = NA,
       vaccinated = vaccinated,
       symptomatic = rbinom(n_new, 1, p_symptoms),
-      screenable = rbinom(n, 1, .abm_parameters$screenable_fraction)
+      screenable = rbinom(n_new, 1,
+                          .abm_parameters$screenable_fraction)
     )
   } else {
     new_infections <- NULL
