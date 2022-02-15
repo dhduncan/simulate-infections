@@ -6,23 +6,20 @@ source("./packages.R")
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 
-safe_get_valid_abm_samples <- safely(get_valid_abm_samples)
-
+#safe_get_valid_abm_samples <- safely(get_valid_abm_samples)
 
 sims <- expand_grid(
   vaccination_coverage = 0.74,
   vaccination_test_seeking_multiplier = 1,
   passive_detection_given_symptoms = c(0.5),
-  rel_active_detection_vaccinated_source = c(1,0),
-  rel_active_detection_vaccinated_contact = c(1,0),
-  #ve_onward=0.639*c(0.9, 1, 1.1),
-  ve_onward=0.639,
-  isolation_days_vax=c(14), 
+  rel_active_detection_vaccinated_source = 1,
+  rel_active_detection_vaccinated_contact = 1,
+  isolation_days_vax=c(7), 
   isolation_start_day=c('isolation'),
   symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
   workplace_screening=TRUE,
-  static_R_star = TRUE
+  static_R_star = FALSE
   ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
@@ -42,7 +39,6 @@ sims <- expand_grid(
         passive_detection_given_symptoms = passive_detection_given_symptoms,
         rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
         rel_active_detection_vaccinated_contact = rel_active_detection_vaccinated_contact,
-        ve_onward = ve_onward,
         isolation_days_vax = isolation_days_vax,
         isolation_start_day = isolation_start_day,
         symptomatic_detections = symptomatic_detections,
@@ -105,8 +101,7 @@ plot_ascertainment <- sims %>%
   geom_line() +
   theme(legend.position = "none") 
 
-(sim_plot <- plot_infections + plot_ascertainment)
-
+(sim_plot <- plot_grid(plot_infections, plot_ascertainment, nrow = 2))
 
 # check for superspreading ----
 onward_infections <- sims %>% 
@@ -137,6 +132,8 @@ onward_thru_time <- sims %>%
   facet_grid(case_found_by~.) +
   theme_cowplot()
   
+plot_grid(onward_infection_hist, onward_thru_time, nrow = 2)
+
 
 ggplot(source_check_df,
        aes(x = infection_day, y = onward_infections)) +
@@ -179,8 +176,8 @@ ascertainment_output <- trim_sims %>%
   mutate(
     case_found_by = case_when(
       case_found_by == "contact_tracing" ~ "contact",
-      case_found_by == "workplace_screening" ~ "screening",
       case_found_by == "symptomatic_surveillance" ~ "symptomatic",
+      case_found_by == "workplace_screening" ~ "screening",
       TRUE ~ "undetected"
     )
   ) %>% 
@@ -214,6 +211,7 @@ ggplot(trim_sims) +
   theme(legend.position = "none") +
   labs(title="")
     
+# ggsave(
 # ggsave(
 #   'outputs/plots/infections_trajectories_by_mode_pdetect0.5.png',
 #   height=6,

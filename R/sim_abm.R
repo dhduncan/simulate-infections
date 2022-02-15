@@ -29,17 +29,19 @@ sim_abm <- function(
     # infect people in the population
     infections <- infect(infections)
     
-   # do workplace screening for asymptomatic people, so they can be isolated (and their contacts traced??) 
-    if (parameters$workplace_screening) {
-      infections <- do_screening(infections)
-    }
+    
  
     # do passive detection (before contact tracing, so we can contact trace from them)   
     if (parameters$symptomatic_detections) {
       infections <- symptomatic_presentation(infections)
     }
     
-    # do contact tracing for any people put into isolation today
+   # do workplace screening for asymptomatic people, so they can be isolated (and their contacts traced??) 
+    if (parameters$workplace_screening) {
+      infections <- do_screening(infections)
+    }
+
+        # do contact tracing for any people put into isolation today
     if (parameters$contact_tracing) {
       infections <- do_contact_tracing(infections)
     }

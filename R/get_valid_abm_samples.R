@@ -15,13 +15,6 @@ get_valid_abm_samples <- function(parameters,
   # for some reason replicate was wigging out about the dots
 
   params_list <- replicate(n_samples, parameters, simplify = FALSE)
-  
-  # samples_list <- plyr::laply(
-  #   .data = params_list,
-  #   .fun = get_valid_abm_sample,
-  #   .inform = TRUE,
-  #   ...
-  # )
 
   samples_list <- future.apply::future_lapply(
     X = params_list,
