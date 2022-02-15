@@ -1,7 +1,9 @@
 # Freya Shearer's file, embedding the bAByM 
 
 ## Loads all packages and defines how to handle NAMESPACE conflicts
-source("./packages.R")
+# CTRL + SHFT + ALT + P
+
+set.seed(2)
 
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)

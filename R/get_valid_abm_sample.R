@@ -24,7 +24,6 @@ get_valid_abm_sample <- function(parameters,
   successful <- FALSE
   while (!successful & try < max_tries) {
     try <- try + 1
- browser()   
     sim <- sim_abm(
       infections = sim_initial_infections(initial_infections),
       parameters = parameters,
