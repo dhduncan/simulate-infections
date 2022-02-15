@@ -6,8 +6,6 @@ source("./packages.R")
 future::plan(multisession(workers = 8))
 #future::plan(sequential, split=TRUE)
 
-#safe_get_valid_abm_samples <- safely(get_valid_abm_samples)
-
 sims <- expand_grid(
   vaccination_coverage = 0.74,
   vaccination_test_seeking_multiplier = 1,
