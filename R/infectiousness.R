@@ -31,8 +31,9 @@ infectiousness <- function(infections) {
     .abm_parameters$asymptomatic_relative_infectiousness
   )
   
+
   if(.abm_parameters$static_R_star) {
-    
+
     .abm_parameters$R_star *
       gi_pmf_discrete(day_diff) *
       isolation_multiplier *

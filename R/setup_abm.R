@@ -29,6 +29,7 @@ setup_abm <- function(
   # whether to do routine screening at workplaces
   workplace_screening = TRUE,
   
+<<<<<<< HEAD
   screenable_fraction =  0.4 *  107e+05 / 23402e+03, # rounded population stats 
   
   # the first bit is a an arbitrary middle value from: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19 and the latter is the workforce fraction of the australian population from https://profile.id.com.au/australia/population. (62% of that workforce is in FTE, but that detail not in sim at present).
@@ -37,6 +38,19 @@ setup_abm <- function(
   symptomatic_detections = TRUE,
   
    static_R_star = TRUE,
+=======
+  screenable_fraction =  0.4 *  107e+05 / 23402e+03, # rounded population stats from 
+  # https://profile.id.com.au/australia/population.  62% of that workforce is in FTE, but that detail not in sim at present
+  
+  # in kind of workforce subject to routine screening
+  #p_essential <- 0.40  # how to parameterise this - different estimates and definitions. Here are some data, from which I've plucked an arbitrary middle value: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19, i've gone arbitrarily lower
+  #p_screenable <- p_workforce * p_essential
+  
+  # switch for passive presentation of symptomatic individuals
+  symptomatic_detections = TRUE,
+  
+  static_R_star = TRUE,
+>>>>>>> 4f6639a0a8caa3c7750f4cd4bcd4e0a861aa2d28
   
   # probability of an infectee being found by contact tracing from the source
   p_active_detection = 0.95,
@@ -78,7 +92,11 @@ setup_abm <- function(
     isolation_to_interview_samples = isolation_to_interview_samples,
     isolation_days_vax=isolation_days_vax,
     isolation_start_day=isolation_start_day,
+<<<<<<< HEAD
      static_R_star = static_R_star
+=======
+    static_R_star = static_R_star
+>>>>>>> 4f6639a0a8caa3c7750f4cd4bcd4e0a861aa2d28
     
     
   )
