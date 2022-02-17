@@ -16,9 +16,9 @@ setup_abm <- function(
   vaccination_coverage = 0.94,
   # incorporate correction for onward transmission to account for reduction in
   # infectiousness due to being symptomatic
-  ve_onward = 0.639, # sensitivity analysis values, lower=0.575, upper=0.7029
-  ve_susceptibility = 0.735,
-  ve_symptoms = 0.775,
+  ve_onward = 0.339, # sensitivity analysis values, lower=0.575, upper=0.7029
+  ve_susceptibility = 0.435,
+  ve_symptoms = 0.375,
   
   # symptomaticity and passive detection
   clinical_fraction = 0.307, #0.307, # was previously - 0.8
@@ -29,11 +29,17 @@ setup_abm <- function(
   # whether to do routine screening at workplaces
   workplace_screening = TRUE,
   
-  # switch for passive presentation of symptomatic individuals
+  screenable_fraction =  0.4 *  107e+05 / 23402e+03, # rounded population stats 
+  
+  # the first bit is a an arbitrary middle value from: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19 and the latter is the workforce fraction of the australian population from https://profile.id.com.au/australia/population. (62% of that workforce is in FTE, but that detail not in sim at present).
+  
+  # switch for passive presentation of symptomatic individuals for testing
   symptomatic_detections = TRUE,
   
+   static_R_star = TRUE,
+
   # probability of an infectee being found by contact tracing from the source
-  p_active_detection = 0.95,
+  p_active_detection = 0.5,
   
   # relative probability of active detection for vaccinated individuals
   rel_active_detection_vaccinated_source = 1,
@@ -43,6 +49,7 @@ setup_abm <- function(
   
   # whether to do downstream contact tracing
   contact_tracing = TRUE,
+  
   # placeholder for delays
   isolation_to_interview_samples = get_optimal_isol_interview_samples(),
   isolation_days_vax=14,
@@ -62,6 +69,7 @@ setup_abm <- function(
     asymptomatic_relative_infectiousness = asymptomatic_relative_infectiousness,
     vaccination_test_seeking_multiplier = vaccination_test_seeking_multiplier,
     workplace_screening = workplace_screening,
+    screenable_fraction = screenable_fraction,
     symptomatic_detections = symptomatic_detections,
     p_active_detection = p_active_detection,
     rel_active_detection_vaccinated_source = rel_active_detection_vaccinated_source,
@@ -69,7 +77,9 @@ setup_abm <- function(
     contact_tracing = contact_tracing,
     isolation_to_interview_samples = isolation_to_interview_samples,
     isolation_days_vax=isolation_days_vax,
-    isolation_start_day=isolation_start_day
+    isolation_start_day=isolation_start_day,
+     static_R_star = static_R_star
+
     
   )
   

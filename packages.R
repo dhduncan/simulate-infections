@@ -42,5 +42,6 @@ library(vctrs)
 library(RColorBrewer)
 library(tinter)
 library(future.apply)
+options(future.apply.debug = TRUE)
 
 message("packages loaded!")

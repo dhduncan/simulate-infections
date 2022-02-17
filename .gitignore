@@ -4,7 +4,6 @@
 # ignore everything in the data folder
 data/
 not_synced/
-outputs/
 
 # ignore figures in docs
 doc/*/figure-html/
@@ -58,9 +57,6 @@ renv/
 
 # renv's .Rprofile setup
 .Rprofile
-
-# outputs folder
-outputs/
 
 # Rmarkdown intermediate files
 **/*_files/*
