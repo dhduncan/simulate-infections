@@ -11,8 +11,8 @@ get_valid_abm_sample <- function(parameters,
                                  initial_infections = 500, 
                                  min_infections = 100,
                                  min_days = 0, #20,
-                                 max_infections = 1e+5,
-                                 max_days = 100,
+                                 max_infections = 5e+5,
+                                 max_days = 150,
                                  exclude_days_start = 7, # avoid lag
                                  exclude_days_end = 14, # avoid lead
                                  max_tries = 20) {
