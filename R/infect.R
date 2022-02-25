@@ -10,7 +10,7 @@
 #' @export
 infect <- function(infections) {
   
-  # add on new infections for this timesteps, infecting the vaccinated and
+  # add on new infections for this timestep, infecting the vaccinated and
   # unvaccinated populations separately
   rbind(
     infections,

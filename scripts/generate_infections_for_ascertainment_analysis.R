@@ -12,9 +12,9 @@ future::plan(multisession(workers = 8))
 sims <- expand_grid(
   vaccination_coverage = 0.9,
   vaccination_test_seeking_multiplier = 1,
-  passive_detection_given_symptoms = c(0.5),
-  rel_active_detection_vaccinated_source = c(1,0),
-  rel_active_detection_vaccinated_contact = c(1,0),
+  passive_detection_given_symptoms = 0.5,
+  rel_active_detection_vaccinated_source = 1,
+  rel_active_detection_vaccinated_contact = 1,
   p_active_detection =  0.5, #c(0.5, 0.75, 0.95),
   ve_onward=0.439,
   isolation_days_vax=c(7), 
@@ -22,7 +22,7 @@ sims <- expand_grid(
   symptomatic_detections=TRUE, 
   contact_tracing=TRUE,
   workplace_screening=TRUE,
-  static_R_star = TRUE
+  static_R_star = FALSE
   ) %>%
   mutate(
     # tweak starting R to get optimal reproduction number at about 1
@@ -47,8 +47,8 @@ sims <- expand_grid(
         isolation_start_day = isolation_start_day,
         symptomatic_detections = symptomatic_detections,
         contact_tracing = contact_tracing,
-        workplace_screening = workplace_screening#,
-        # static_R_star = static_R_star
+        workplace_screening = workplace_screening,
+        static_R_star = static_R_star
       )
     )
   ) %>%
@@ -86,7 +86,7 @@ plot_ascertainment <- sims %>%
   unnest(simulations) %>% 
   filter(
     !is.na(source_id) &  # may be superfluous at present
-      infection_day > 1 & # this isn't already affected in get_valid_sim_sample?
+      infection_day > 1 & # this isn't already done in get_valid_sim_sample?
   infection_day < (max(infection_day) - 14)
   ) %>% 
   group_by(simulation,
@@ -177,25 +177,6 @@ trim_sims <- sims %>%
                    )
 
 
-# save output for NG ascertainment model
-ascertainment_output <- trim_sims %>% 
-#  filter(case_found_by != 'undetected') %>% 
-  select(-proportion) %>% 
-  mutate(
-    case_found_by = case_when(
-      case_found_by == "contact_tracing" ~ "contact",
-      case_found_by == "workplace_screening" ~ "screening",
-      case_found_by == "symptomatic_surveillance" ~ "symptomatic",
-      TRUE ~ "undetected"
-    )
-  ) %>% 
-  pivot_wider(names_from = case_found_by,
-              values_from = infections,
-              names_prefix = "count_tested_") #%>% 
-  #mutate(across(ends_with("_fraction"), ~if_else(is.na(.), 0, .)))
-  
-write_csv(ascertainment_output, "outputs/sim_output.csv")
-
 # could try and include the essential params in the file name rather than date which the system takes care of  
 
 # 2)
@@ -204,18 +185,29 @@ write_csv(ascertainment_output, "outputs/sim_output.csv")
 # detected via symptomatic surveillance
 # detected via active detection
 # neither
-  
-ggplot(trim_sims) +
+trim_sims %>% 
+  mutate(
+    case_found_by = factor(case_found_by, 
+                          levels = c("contact_tracing", 
+                          "symptomatic_surveillance",
+                          "workplace_screening", 
+                          "undetected"),
+                          labels = c("contact\ntracing", 
+                                     "symptomatic\nsurveillance",
+                                     "workplace\nscreening", 
+                                     "undetected"),
+                          ordered = TRUE)
+  ) %>% 
+ggplot(
   aes(
     x=infection_day, 
     y=infections,
-    group=simulation) + 
-  # facet_grid(
-  #   p_active_detection~case_found_by,
-  #   ncol=4
-  # ) +
+    group=simulation)) + 
+   facet_grid(
+     .~case_found_by
+   ) +
   theme_cowplot() +
-  geom_line(aes(color=simulation)) +
+  geom_line(aes(colour = simulation)) +
   theme(legend.position = "none") +
   labs(title="")
     

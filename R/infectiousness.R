@@ -32,9 +32,10 @@ infectiousness <- function(infections) {
   )
   
 
+
   if(.abm_parameters$static_R_star) {
 
-    .abm_parameters$R_star *
+  infectiousness <- .abm_parameters$R_star *
       gi_pmf_discrete(day_diff) *
       isolation_multiplier *
       vaccination_multiplier *
@@ -42,12 +43,15 @@ infectiousness <- function(infections) {
     
   } else {
 
-    get_R_star() *
+    infectiousness <- get_R_star() *
       gi_pmf_discrete(day_diff) *
       isolation_multiplier *
       vaccination_multiplier *
       symptomatic_multiplier
 
+   
   }
     
+  infectiousness
+  
 }

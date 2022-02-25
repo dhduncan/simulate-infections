@@ -10,7 +10,6 @@
 new_infections <- function(infections, vaccinated = FALSE) {
   
   # infect new people, differently for if the new infections are vaccinated
-  
   if (vaccinated) {
     susceptibility_multiplier <- 1 - .abm_parameters$ve_susceptibility
     fraction <- .abm_parameters$vaccination_coverage
@@ -24,10 +23,10 @@ new_infections <- function(infections, vaccinated = FALSE) {
   # simulate onward infections 
   infectiousness <- infectiousness(infections) * susceptibility_multiplier
 
-  # # simulate onward infections
-  # infectiousness <- infectiousness(infections, 
-  #                                  .abm_parameters$static_R_star) * susceptibility_multiplier
-
+  .abm_tracker <<- .abm_tracker %>% add_row(
+    days = .abm_globals$day,
+    ind_infectiousness = infectiousness)
+  
   onward_infections <- rpois(
     nrow(infections),
     infectiousness * fraction
