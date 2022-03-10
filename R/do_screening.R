@@ -21,6 +21,7 @@ do_screening <- function(infections) {
   # only detectable if they are not already in isolation
   detectable <- !is.finite(infections$isolation_day) & infections$screenable
   
+  #
   p_screened <- 5/7  # assuming works 5 of 7 days
  
   days_since_infection <- .abm_globals$day - infections$infection_day 
@@ -33,7 +34,7 @@ do_screening <- function(infections) {
   
   p_detection = ifelse(
     detectable,
-    p_screened * p_positive,
+    p_screened * p_positive * .abm_parameters$clinical_fraction,
     0)
  
   detected <- rbinom(nrow(infections), 1, p_detection)

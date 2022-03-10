@@ -12,11 +12,11 @@ future::plan(multisession(workers = 8))
 sims <- expand_grid(
   vaccination_coverage = 0.9,
   vaccination_test_seeking_multiplier = 1,
-  passive_detection_given_symptoms = 0.5,
+  passive_detection_given_symptoms = 0.85,
   rel_active_detection_vaccinated_source = 1,
   rel_active_detection_vaccinated_contact = 1,
-  p_active_detection =  0.5, #c(0.5, 0.75, 0.95),
-  ve_onward=0.439,
+  p_active_detection =  0.85, #c(0.5, 0.75, 0.95),
+  ve_onward=0.2,
   isolation_days_vax=c(7), 
   isolation_start_day=c('isolation'),
   symptomatic_detections=TRUE, 
@@ -218,8 +218,8 @@ ggplot(
 #   bg='white'
 # )
 
-# save output for NG ascertainment model ----
-ascertainment_output <- trim_sims %>% 
+# save outputs for NG ascertainment model ----
+ascertainment_data <- trim_sims %>% 
   #  filter(case_found_by != 'undetected') %>% 
   select(-proportion) %>% 
   mutate(
@@ -235,7 +235,10 @@ ascertainment_output <- trim_sims %>%
               names_prefix = "count_tested_") #%>% 
 #mutate(across(ends_with("_fraction"), ~if_else(is.na(.), 0, .)))
 
-write_csv(ascertainment_output, "outputs/sim_output.csv")
+write_csv(ascertainment_data, "outputs/sim_output.csv")
+
+saveRDS(sims$parameters[[1]], file = "outputs/abm_params.rds") 
+
 
 
 

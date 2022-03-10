@@ -18,7 +18,7 @@ setup_abm <- function(
   # infectiousness due to being symptomatic
   ve_onward = 0.2, # by eye, ~50 days in to NG's waning plot from Jan 24
   ve_susceptibility = 0.35,
-  ve_symptoms = 0.45,
+  ve_symptoms = 0.25,
   
   # symptomaticity and passive detection
   clinical_fraction = 0.307, #0.307, # was previously - 0.8
@@ -29,9 +29,9 @@ setup_abm <- function(
   # whether to do routine screening at workplaces
   workplace_screening = TRUE,
   
-  screenable_fraction =  0.4 *  107e+05 / 23402e+03, # rounded population stats 
+  screenable_fraction =  0.1 *  107e+05 / 23402e+03, # rounded population stats 
   
-  # the first bit is a an arbitrary middle value from: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19 and the latter is the workforce fraction of the australian population from https://profile.id.com.au/australia/population. (62% of that workforce is in FTE, but that detail not in sim at present).
+  # the first bit was (0.4), an arbitrary middle value from: https://www.sgsep.com.au/publications/insights/closing-the-divide-essential-workers-australian-cities-and-covid-19 and the latter is the workforce fraction of the australian population from https://profile.id.com.au/australia/population. (62% of that workforce is in FTE, but that detail not in sim at present).
   
   # switch for passive presentation of symptomatic individuals for testing
   symptomatic_detections = TRUE,
